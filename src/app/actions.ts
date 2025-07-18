@@ -13,8 +13,13 @@ export async function login(credentials: { username: string; password?: string }
     .eq('username', credentials.username)
     .single();
 
-  if (error || !user) {
-      return { success: false, error: 'El usuario no existe o hay un problema de conexión.' };
+  if (error) {
+    console.error('Supabase login error:', error);
+    return { success: false, error: 'El usuario no existe o hay un problema de conexión.' };
+  }
+
+  if (!user) {
+    return { success: false, error: 'El usuario no existe o hay un problema de conexión.' };
   }
   
   if (!user.activo) {
