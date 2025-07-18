@@ -10,6 +10,11 @@ type LoginResult = {
   error?: string;
 }
 
+type Credentials = {
+  username: string;
+  password?: string;
+}
+
 const useAuth = () => {
   const [user, setUser] = useState<Cajero | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,9 +34,9 @@ const useAuth = () => {
     }
   }, []);
 
-  const login = useCallback(async (username: string, password: string): Promise<LoginResult> => {
+  const login = useCallback(async (credentials: Credentials): Promise<LoginResult> => {
     try {
-      const result = await loginAction({ username, password });
+      const result = await loginAction(credentials);
       if (result.success && result.user) {
         setUser(result.user);
         localStorage.setItem('bingo_user', JSON.stringify(result.user));

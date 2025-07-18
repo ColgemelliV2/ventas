@@ -23,7 +23,8 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const result = await login(username, password);
+    // Correctly pass credentials as an object
+    const result = await login({ username, password });
     setIsLoading(false);
 
     if (result.success) {
