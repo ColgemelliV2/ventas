@@ -7,22 +7,22 @@ export async function login(credentials: { username: string; password?: string }
   // IMPORTANT: This is a simplified login for demonstration purposes.
   // The password check has been temporarily removed to fix a login issue.
   // In a real application, you should use Supabase Auth or a secure password hashing and comparison mechanism.
-  const { data: userWithPassword, error } = await supabase
+  const { data: user, error } = await supabase
     .from('cajeros')
     .select('*')
     .eq('username', credentials.username)
     .single();
 
-  if (error || !userWithPassword) {
-      return { success: false, error: 'Usuario o contraseña incorrecta.' };
+  if (error || !user) {
+      return { success: false, error: 'El usuario no existe o hay un problema de conexión.' };
   }
   
-  if (!userWithPassword.activo) {
+  if (!user.activo) {
     return { success: false, error: 'La cuenta del cajero está inactiva.' };
   }
   
   // Exclude password hash from the returned user object
-  const { password_hash, ...cajeroData } = userWithPassword;
+  const { password_hash, ...cajeroData } = user;
   
   return { success: true, user: cajeroData };
 }

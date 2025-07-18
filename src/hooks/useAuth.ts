@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import { login as loginAction } from '@/app/actions';
 import type { Cajero } from '@/types';
 
+type LoginResult = {
+  success: boolean;
+  error?: string;
+}
+
 const useAuth = () => {
   const [user, setUser] = useState<Cajero | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,17 +29,17 @@ const useAuth = () => {
     }
   }, []);
 
-  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
+  const login = useCallback(async (username: string, password: string): Promise<LoginResult> => {
     try {
       const result = await loginAction({ username, password });
       if (result.success && result.user) {
         setUser(result.user);
         localStorage.setItem('bingo_user', JSON.stringify(result.user));
-        return true;
+        return { success: true };
       }
-      return false;
+      return { success: false, error: result.error || 'Error desconocido' };
     } catch (error) {
-      return false;
+      return { success: false, error: 'Error de conexión al intentar iniciar sesión.' };
     }
   }, []);
 

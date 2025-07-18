@@ -23,16 +23,16 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const success = await login(username, password);
+    const result = await login(username, password);
     setIsLoading(false);
 
-    if (success) {
+    if (result.success) {
       router.push('/');
     } else {
       toast({
         variant: 'destructive',
         title: 'Error de inicio de sesión',
-        description: 'Usuario o contraseña incorrectos. Por favor, intente de nuevo.',
+        description: result.error || 'Usuario o contraseña incorrectos. Por favor, intente de nuevo.',
       });
     }
   };
