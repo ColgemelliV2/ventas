@@ -19,6 +19,15 @@ interface CartProps {
 
 export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }: CartProps) {
   const [cashReceived, setCashReceived] = useState('');
+  
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
 
   const updateQuantity = (productId: number, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -73,7 +82,7 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
                 <div key={item.id} className="flex items-center gap-2">
                   <div className="flex-grow">
                     <p className="font-medium text-sm truncate">{item.nombre}</p>
-                    <p className="text-xs text-muted-foreground">${item.precio.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">{formatCurrency(item.precio)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
@@ -84,7 +93,7 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
                       <PlusCircle className="h-4 w-4" />
                     </Button>
                   </div>
-                  <p className="font-semibold w-16 text-right">${(item.precio * item.quantity).toFixed(2)}</p>
+                  <p className="font-semibold w-20 text-right">{formatCurrency(item.precio * item.quantity)}</p>
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/80 hover:text-destructive" onClick={() => updateQuantity(item.id, 0)}>
                       <XCircle className="h-4 w-4" />
                   </Button>
@@ -97,14 +106,14 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
         <div className="space-y-2 text-lg">
           <div className="flex justify-between font-bold">
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex justify-between items-center">
             <label htmlFor="cash-received" className="font-semibold">Efectivo</label>
             <Input
               id="cash-received"
               type="number"
-              placeholder="0.00"
+              placeholder="0"
               className="w-32 text-right font-mono"
               value={cashReceived}
               onChange={(e) => setCashReceived(e.target.value)}
@@ -113,7 +122,7 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
           </div>
           <div className="flex justify-between font-bold text-accent">
             <span>Cambio</span>
-            <span>${change.toFixed(2)}</span>
+            <span>{formatCurrency(change)}</span>
           </div>
         </div>
       </CardContent>

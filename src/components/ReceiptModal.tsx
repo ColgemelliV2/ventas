@@ -32,6 +32,15 @@ const ReceiptModal = ({ isOpen, onClose, saleData, cajero }: ReceiptModalProps) 
     }
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+
   if (!isOpen) return null;
 
   return (
@@ -70,7 +79,7 @@ const ReceiptModal = ({ isOpen, onClose, saleData, cajero }: ReceiptModalProps) 
                     <tr key={item.id} className="border-b">
                       <td className="py-2">{item.quantity}</td>
                       <td className="py-2">{item.nombre}</td>
-                      <td className="text-right py-2">${(item.precio * item.quantity).toFixed(2)}</td>
+                      <td className="text-right py-2">{formatCurrency(item.precio * item.quantity)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -80,15 +89,15 @@ const ReceiptModal = ({ isOpen, onClose, saleData, cajero }: ReceiptModalProps) 
             <div className="mt-4 space-y-2 text-base">
               <div className="flex justify-between font-bold">
                 <span>Subtotal:</span>
-                <span>${saleData.venta.subtotal.toFixed(2)}</span>
+                <span>{formatCurrency(saleData.venta.subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Efectivo Recibido:</span>
-                <span>${saleData.venta.efectivo_recibido.toFixed(2)}</span>
+                <span>{formatCurrency(saleData.venta.efectivo_recibido)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg text-accent">
                 <span>Cambio:</span>
-                <span>${saleData.venta.cambio.toFixed(2)}</span>
+                <span>{formatCurrency(saleData.venta.cambio)}</span>
               </div>
             </div>
           </div>
