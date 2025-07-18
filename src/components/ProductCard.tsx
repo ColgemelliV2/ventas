@@ -12,17 +12,20 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  const imageUrl = product.imagen_url || 'https://placehold.co/300x300.png';
+
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer" onClick={() => onAddToCart(product)}>
       <CardHeader className="p-0">
         <div className="aspect-square relative w-full">
           <Image
-            src={product.imagen_url || 'https://placehold.co/300x300.png'}
+            src={imageUrl}
             alt={product.nombre}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className="object-cover"
             data-ai-hint="bingo card"
+            unoptimized={product.imagen_url ? false : true} // Avoid optimizing placeholder images
           />
         </div>
       </CardHeader>
