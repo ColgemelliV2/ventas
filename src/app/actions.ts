@@ -4,35 +4,24 @@ import { supabase } from '@/lib/supabase';
 import type { SaleData } from '@/types';
 
 export async function login(credentials: { username: string; password?: string }) {
-  const { data: user, error } = await supabase
-    .from('cajeros')
-    .select('*')
-    .eq('username', credentials.username)
-    .single();
-
-  if (error || !user) {
-    return { success: false, error: 'Usuario no encontrado.' };
-  }
-
   // IMPORTANT: This is a simplified login for demonstration purposes.
   // In a real application, you should use Supabase Auth or a secure password hashing and comparison mechanism.
-  // The provided schema has a password_hash, but we are comparing plain text here as per constraints.
-  // We check if the provided password matches the stored hash (assuming it's plain for now).
-  const { data: userWithPassword, error: passwordError } = await supabase
+  const { data: userWithPassword, error } = await supabase
     .from('cajeros')
     .select('*')
     .eq('username', credentials.username)
-    .eq('password_hash', credentials.password)
+    .eq('password_hash', credentials.password) // The schema has a password_hash, but we are comparing plain text here.
     .single();
 
-  if (passwordError || !userWithPassword) {
-      return { success: false, error: 'Contraseña incorrecta.' };
+  if (error || !userWithPassword) {
+      return { success: false, error: 'Usuario o contraseña incorrecta.' };
   }
   
   if (!userWithPassword.activo) {
     return { success: false, error: 'La cuenta del cajero está inactiva.' };
   }
   
+  // Exclude password hash from the returned user object
   const { password_hash, ...cajeroData } = userWithPassword;
   
   return { success: true, user: cajeroData };
