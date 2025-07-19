@@ -79,7 +79,8 @@ export async function recordSale(saleData: SaleData) {
 
     if (ventaError || !ventaData || !ventaData.id) {
       console.error('Error inserting sale:', ventaError);
-      throw new Error('No se pudo crear el registro de la venta principal.');
+      const errorMessage = ventaError ? `Detalle de Supabase: ${ventaError.message}` : 'No se pudo crear el registro de la venta principal.';
+      throw new Error(errorMessage);
     }
 
     const venta_id = ventaData.id;
@@ -111,29 +112,29 @@ export async function recordSale(saleData: SaleData) {
 
 // --- Dashboard Actions ---
 
-export async function getDashboardData(): Promise<DashboardData> {
+export async function getDashboardData(): Promise<{data: DashboardData | null, error: string | null}> {
     const { data, error } = await supabase.rpc('get_dashboard_summary');
 
     if (error) {
         console.error('Error fetching dashboard summary:', error);
-        throw new Error('Could not fetch dashboard summary.');
+        return { data: null, error: error.message };
     }
 
-    return (data && data[0]) || { total_revenue: 0, total_sales: 0 };
+    return { data: (data && data[0]) || { total_revenue: 0, total_sales: 0 }, error: null };
 }
 
 
-export async function getSalesByProduct(): Promise<ProductSale[]> {
+export async function getSalesByProduct(): Promise<{data: ProductSale[] | null, error: string | null}> {
     const { data, error } = await supabase.rpc('get_sales_by_product');
 
     if (error) {
         console.error('Error fetching sales by product:', error);
-        throw new Error('Could not fetch sales by product.');
+        return { data: null, error: error.message };
     }
-    return data || [];
+    return { data: data || [], error: null };
 }
 
-export async function getAllSales(): Promise<VentaConDetalles[]> {
+export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, error: string | null}> {
     const { data: ventas, error: ventasError } = await supabase
         .from('ventas')
         .select(`
@@ -144,7 +145,7 @@ export async function getAllSales(): Promise<VentaConDetalles[]> {
 
     if (ventasError) {
         console.error('Error fetching sales:', ventasError);
-        throw new Error('Could not fetch sales.');
+        return { data: null, error: ventasError.message };
     }
 
     const { data: detalles, error: detallesError } = await supabase
@@ -156,10 +157,10 @@ export async function getAllSales(): Promise<VentaConDetalles[]> {
     
     if (detallesError) {
         console.error('Error fetching sale details:', detallesError);
-        throw new Error('Could not fetch sale details.');
+        return { data: null, error: detallesError.message };
     }
 
-    const ventasConDetalles = ventas.map(venta => {
+    const ventasConDetalles = (ventas || []).map(venta => {
         const detallesDeVenta: DetalleVentaConNombre[] = (detalles || [])
             .filter(d => d.venta_id === venta.id)
             .map(d => ({
@@ -174,5 +175,5 @@ export async function getAllSales(): Promise<VentaConDetalles[]> {
         };
     });
     
-    return ventasConDetalles;
+    return { data: ventasConDetalles, error: null };
 }
