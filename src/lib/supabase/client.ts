@@ -1,4 +1,10 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env.local for local development
+// In production (Netlify, Vercel), these will be set in the platform's UI
+dotenv.config({ path: '.env.local' });
+
 
 // This function creates a Supabase client.
 // It is intended to be used in Server Actions and other server-side code.
