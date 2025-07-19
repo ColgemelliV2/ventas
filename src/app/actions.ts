@@ -53,33 +53,8 @@ export async function getProducts(): Promise<Product[]> {
     console.error('Error fetching products:', error);
     throw new Error('Could not fetch products.');
   }
-
-  const getCategoryOrder = (productName: string): number => {
-    const lowerCaseName = productName.toLowerCase();
-    
-    const foodKeywords = ['empanada', 'pastel', 'chorizo', 'arepa', 'hamburguesa', 'perro', 'pizza', 'torta', 'dedito'];
-    const drinkKeywords = ['gaseosa', 'agua', 'jugo', 'cerveza', 'limonada', 'refajo', 'malta'];
-    
-    if (foodKeywords.some(keyword => lowerCaseName.includes(keyword))) {
-      return 1;
-    }
-    if (drinkKeywords.some(keyword => lowerCaseName.includes(keyword))) {
-      return 2;
-    }
-    return 3;
-  };
-
-  const sortedData = (data || []).sort((a, b) => {
-    const orderA = getCategoryOrder(a.nombre);
-    const orderB = getCategoryOrder(b.nombre);
-
-    if (orderA !== orderB) {
-      return orderA - orderB;
-    }
-    return a.nombre.localeCompare(b.nombre);
-  });
-
-  return sortedData;
+  
+  return data || [];
 }
 
 
