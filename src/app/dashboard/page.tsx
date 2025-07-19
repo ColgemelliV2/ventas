@@ -50,7 +50,7 @@ export default function DashboardPage() {
             setAllSales(allSalesData || []);
           } catch (err) {
             console.error('Error fetching dashboard data:', err);
-            setError('No se pudieron cargar los datos del dashboard. Es posible que las funciones de la base de datos (RPC) no estén creadas. Por favor, revise las instrucciones.');
+            setError('No se pudieron cargar los datos del dashboard. Es posible que las funciones de la base de datos (RPC) no estén creadas o no tengan los permisos correctos. Por favor, revise las instrucciones y ejecute el script SQL proporcionado en el editor de Supabase.');
           } finally {
             setLoading(false);
           }

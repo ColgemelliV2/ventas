@@ -119,7 +119,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         throw new Error('Could not fetch dashboard summary.');
     }
 
-    return data[0] || { total_revenue: 0, total_sales: 0 };
+    return (data && data[0]) || { total_revenue: 0, total_sales: 0 };
 }
 
 
