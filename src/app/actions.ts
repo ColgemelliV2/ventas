@@ -84,7 +84,7 @@ export async function getProducts(): Promise<Product[]> {
     return 3;
   };
 
-  const sortedData = data.sort((a, b) => {
+  const sortedData = (data || []).sort((a, b) => {
     const orderA = getCategoryOrder(a.nombre);
     const orderB = getCategoryOrder(b.nombre);
 
@@ -260,9 +260,6 @@ export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, e
 // --- Product Management Actions ---
 export async function createProduct(productData: Omit<Product, 'id' | 'created_at'>) {
     const supabaseAdmin = getSupabaseAdminClient();
-    if (!supabaseAdmin) {
-        return { success: false, error: "El cliente de administrador de Supabase no está inicializado. Revisa la SUPABASE_SERVICE_KEY." };
-    }
     
     const { data, error } = await supabaseAdmin
         .from('productos')
@@ -279,9 +276,6 @@ export async function createProduct(productData: Omit<Product, 'id' | 'created_a
 
 export async function updateProduct(productId: number, productData: Partial<Omit<Product, 'id' | 'created_at'>>) {
     const supabaseAdmin = getSupabaseAdminClient();
-    if (!supabaseAdmin) {
-        return { success: false, error: "El cliente de administrador de Supabase no está inicializado. Revisa la SUPABASE_SERVICE_KEY." };
-    }
 
     const { data, error } = await supabaseAdmin
         .from('productos')
