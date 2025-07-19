@@ -216,15 +216,14 @@ export async function createProduct(productData: Omit<Product, 'id' | 'created_a
     const { data, error } = await supabase
         .from('productos')
         .insert([productData])
-        .select()
-        .single();
+        .select();
     
     if (error) {
         console.error("Error creating product:", error);
         return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    return { success: true, data: data ? data[0] : null };
 }
 
 export async function updateProduct(productId: number, productData: Partial<Omit<Product, 'id' | 'created_at'>>) {
@@ -232,13 +231,12 @@ export async function updateProduct(productId: number, productData: Partial<Omit
         .from('productos')
         .update(productData)
         .eq('id', productId)
-        .select()
-        .single();
+        .select();
 
     if (error) {
         console.error(`Error updating product ${productId}:`, error);
         return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    return { success: true, data: data ? data[0] : null };
 }
