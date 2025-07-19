@@ -15,22 +15,6 @@ const getSupabaseClient = () => {
     return createClient(supabaseUrl, supabaseAnonKey);
 }
 
-const getSupabaseAdminClient = () => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_KEY;
-
-    if (!supabaseUrl || !serviceKey) {
-        throw new Error("Supabase Service Key or URL not found. Admin actions will fail.");
-    }
-    return createClient(supabaseUrl, serviceKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    });
-}
-
-
 export async function login(credentials: { username: string; password?: string }) {
   const supabase = getSupabaseClient();
   const { data: user, error } = await supabase
@@ -255,40 +239,4 @@ export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, e
     } catch (e: any) {
         return { data: null, error: e.message };
     }
-}
-
-// --- Product Management Actions ---
-export async function createProduct(productData: Omit<Product, 'id' | 'created_at'>) {
-    const supabaseAdmin = getSupabaseAdminClient();
-    
-    const { data, error } = await supabaseAdmin
-        .from('productos')
-        .insert([productData])
-        .select()
-        .single();
-    
-    if (error) {
-        console.error("Error creating product:", error);
-        return { success: false, error: error.message };
-    }
-
-    return { success: true, data };
-}
-
-export async function updateProduct(productId: number, productData: Partial<Omit<Product, 'id' | 'created_at'>>) {
-    const supabaseAdmin = getSupabaseAdminClient();
-
-    const { data, error } = await supabaseAdmin
-        .from('productos')
-        .update(productData)
-        .eq('id', productId)
-        .select()
-        .single();
-
-    if (error) {
-        console.error(`Error updating product ${productId}:`, error);
-        return { success: false, error: error.message };
-    }
-
-    return { success: true, data };
 }
