@@ -1,18 +1,13 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/client';
 import type { Product, SaleData, DashboardData, ProductSale, VentaConDetalles, DetalleVentaConNombre } from '@/types';
 
 // Helper function to get the Supabase client within an action
 // This ensures env vars are available at runtime.
 const getSupabaseClient = () => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Supabase URL and Anon Key are required.');
-    }
-    return createClient(supabaseUrl, supabaseAnonKey);
+    // The createClient function from our lib now handles env vars internally
+    return createClient();
 }
 
 export async function login(credentials: { username: string; password?: string }) {
