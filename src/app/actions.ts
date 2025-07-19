@@ -1,26 +1,10 @@
 'use server';
 
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import type { Product, SaleData, DashboardData, ProductSale, VentaConDetalles, DetalleVentaConNombre } from '@/types';
-
-// This function creates a Supabase client.
-// It is intended to be used in Server Actions and other server-side code.
-// It reads the Supabase URL and Anon Key from environment variables.
-const getSupabaseClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    // In a real app, you'd want more robust error handling or logging.
-    // For this example, we'll throw an error if the variables are not set.
-    throw new Error('Supabase URL and/or Anon Key are not set in environment variables.');
-  }
-
-  return createSupabaseClient(supabaseUrl, supabaseAnonKey);
-};
+import { createClient } from '@/lib/supabase/client';
+import type { Product, SaleData, DashboardData, ProductSale, VentaConDetalles, DetalleVentaConNombre, Cajero } from '@/types';
 
 export async function login(credentials: { username: string; password?: string }) {
-  const supabase = getSupabaseClient();
+  const supabase = createClient();
   const { data: user, error } = await supabase
     .from('cajeros')
     .select('*')
@@ -43,29 +27,24 @@ export async function login(credentials: { username: string; password?: string }
   // Exclude password_hash from the returned user object
   const { password_hash, ...cajeroData } = user;
   
-  return { success: true, user: cajeroData };
+  return { success: true, user: cajeroData as Cajero };
 }
 
 export async function getProducts(): Promise<Product[]> {
-  const supabase = getSupabaseClient();
-  const { data, error } = await supabase.from('productos').select('*');
+  const supabase = createClient();
+  const { data, error } = await supabase.from('productos').select('*').order('nombre', { ascending: true });
 
   if (error) {
     console.error('Error fetching products:', error);
     throw new Error('Could not fetch products.');
   }
-  
-  // Simple categorization based on name
-  const food = data?.filter(p => ['Chorizo', 'Empanada', 'Arepa'].some(f => p.nombre.includes(f))) || [];
-  const drinks = data?.filter(p => ['Gaseosa', 'Agua', 'Jugo', 'Cerveza'].some(d => p.nombre.includes(d))) || [];
-  const others = data?.filter(p => ![...food, ...drinks].map(i => i.id).includes(p.id)) || [];
 
-  return [...food, ...drinks, ...others];
+  return data || [];
 }
 
 
 export async function recordSale(saleData: SaleData) {
-  const supabase = getSupabaseClient();
+  const supabase = createClient();
   try {
     const { data: ventaData, error: ventaError } = await supabase
       .from('ventas')
@@ -109,7 +88,7 @@ export async function recordSale(saleData: SaleData) {
 // --- Dashboard Actions ---
 
 export async function getDashboardData(): Promise<{data: DashboardData | null, error: string | null}> {
-    const supabase = getSupabaseClient();
+    const supabase = createClient();
     try {
         const { data, error } = await supabase
             .from('ventas')
@@ -130,7 +109,7 @@ export async function getDashboardData(): Promise<{data: DashboardData | null, e
 }
 
 export async function getSalesByProduct(): Promise<{data: ProductSale[] | null, error: string | null}> {
-    const supabase = getSupabaseClient();
+    const supabase = createClient();
     try {
         const { data, error } = await supabase
             .from('detalle_ventas')
@@ -175,7 +154,7 @@ export async function getSalesByProduct(): Promise<{data: ProductSale[] | null, 
 }
 
 export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, error: string | null}> {
-    const supabase = getSupabaseClient();
+    const supabase = createClient();
     try {
         const { data: ventas, error: ventasError } = await supabase
             .from('ventas')
