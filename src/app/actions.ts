@@ -1,7 +1,7 @@
 'use server';
 
 import { supabase } from '@/lib/supabase';
-import type { Product, SaleData } from '@/types';
+import type { Product, SaleData, DashboardData, ProductSale, VentaConDetalles, DetalleVentaConNombre } from '@/types';
 
 export async function login(credentials: { username: string; password?: string }) {
   const { data: user, error } = await supabase
@@ -14,11 +14,11 @@ export async function login(credentials: { username: string; password?: string }
     console.error('Supabase login error:', error);
     return { success: false, error: 'Usuario o contraseña incorrectos.' };
   }
-
-  // NOTE: This is a plain text password check.
+  
+  // NOTE: This is a plain text password check. 
   // For a real production app, you should use a secure hashing library like bcrypt to compare hashes.
   if (user.password_hash !== credentials.password) {
-    return { success: false, error: 'Usuario o contraseña incorrectos.' };
+     return { success: false, error: 'Usuario o contraseña incorrectos.' };
   }
 
   if (!user.activo) {
@@ -117,4 +117,72 @@ export async function recordSale(saleData: SaleData) {
   } catch (error) {
     return { success: false, error: (error as Error).message };
   }
+}
+
+// --- Dashboard Actions ---
+
+export async function getDashboardData(): Promise<DashboardData> {
+    const { data, error } = await supabase.rpc('get_dashboard_summary');
+
+    if (error) {
+        console.error('Error fetching dashboard summary:', error);
+        throw new Error('Could not fetch dashboard summary.');
+    }
+
+    return data[0] || { total_revenue: 0, total_sales: 0 };
+}
+
+
+export async function getSalesByProduct(): Promise<ProductSale[]> {
+    const { data, error } = await supabase.rpc('get_sales_by_product');
+
+    if (error) {
+        console.error('Error fetching sales by product:', error);
+        throw new Error('Could not fetch sales by product.');
+    }
+    return data;
+}
+
+export async function getAllSales(): Promise<VentaConDetalles[]> {
+    const { data: ventas, error: ventasError } = await supabase
+        .from('ventas')
+        .select(`
+            *,
+            cajeros ( nombre_completo )
+        `)
+        .order('fecha_venta', { ascending: false });
+
+    if (ventasError) {
+        console.error('Error fetching sales:', ventasError);
+        throw new Error('Could not fetch sales.');
+    }
+
+    const { data: detalles, error: detallesError } = await supabase
+        .from('detalle_ventas')
+        .select(`
+            *,
+            productos ( nombre )
+        `);
+    
+    if (detallesError) {
+        console.error('Error fetching sale details:', detallesError);
+        throw new Error('Could not fetch sale details.');
+    }
+
+    const ventasConDetalles = ventas.map(venta => {
+        const detallesDeVenta: DetalleVentaConNombre[] = detalles
+            .filter(d => d.venta_id === venta.id)
+            .map(d => ({
+                ...d,
+                nombre_producto: d.productos?.nombre || 'Producto desconocido'
+            }));
+
+        return {
+            ...venta,
+            cajero_nombre: venta.cajeros?.nombre_completo || 'Cajero desconocido',
+            detalles: detallesDeVenta
+        };
+    });
+    
+    return ventasConDetalles;
 }

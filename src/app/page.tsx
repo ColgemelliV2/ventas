@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut, Tags, ShoppingCart } from 'lucide-react';
+import { LogOut, Tags, ShoppingCart, LayoutDashboard } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
 import { getProducts, recordSale } from '@/app/actions';
-import type { Product, CartItem, SaleData, Venta, DetalleVenta } from '@/types';
+import type { Product, CartItem, SaleData } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -124,6 +125,14 @@ export default function SalesPage() {
           <h1 className="text-2xl font-bold text-primary">Ventas Bingo 2025</h1>
           <div className="flex items-center gap-4">
             <span className="hidden md:inline text-sm text-muted-foreground">Cajero: {user.nombre_completo}</span>
+             {user.username === 'administrador' && (
+              <Button variant="secondary" size="sm" asChild>
+                <Link href="/dashboard">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Dashboard
+                </Link>
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={logout}>
               <LogOut className="mr-2 h-4 w-4" />
               Salir

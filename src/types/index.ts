@@ -40,3 +40,27 @@ export interface SaleData {
   venta: Venta;
   detalles: CartItem[];
 }
+
+
+// --- Dashboard Types ---
+
+export interface DashboardData {
+    total_revenue: number;
+    total_sales: number;
+}
+
+export interface ProductSale {
+    producto_id: number;
+    nombre: string;
+    total_vendido: number;
+    recaudo_total: number;
+}
+
+export interface DetalleVentaConNombre extends DetalleVenta {
+    nombre_producto: string;
+}
+
+export interface VentaConDetalles extends Venta {
+    cajero_nombre: string;
+    detalles: DetalleVentaConNombre[];
+}
