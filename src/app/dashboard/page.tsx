@@ -106,20 +106,14 @@ export default function DashboardPage() {
              <Card className="border-destructive bg-destructive/10">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-destructive">
-                        <AlertTriangle/> Error al Cargar Datos del Dashboard
+                        <AlertTriangle/> Error al Cargar Datos
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-destructive/90 font-semibold">Ocurrió un error al contactar la base de datos. Este es el detalle técnico:</p>
+                    <p className="text-destructive/90">No se pudieron cargar los datos del dashboard. Por favor, revisa tu conexión a internet y la configuración de Supabase. Si el problema persiste, contacta al soporte.</p>
                     <pre className="mt-2 p-2 bg-black/10 rounded-md text-destructive whitespace-pre-wrap text-sm">
                         <code>{error}</code>
                     </pre>
-                    <p className='mt-4 text-sm text-muted-foreground'>
-                        <b>Posible Causa:</b> Esto usualmente significa que las funciones requeridas (`get_dashboard_summary`, `get_sales_by_product`) no existen en tu base de datos Supabase, o que no tienen los permisos correctos.
-                    </p>
-                     <p className='mt-2 text-sm text-muted-foreground'>
-                        <b>Solución:</b> Por favor, ve al "SQL Editor" en tu proyecto de Supabase y ejecuta el script SQL proporcionado en la documentación para crear y dar permisos a estas funciones.
-                    </p>
                 </CardContent>
             </Card>
         )}

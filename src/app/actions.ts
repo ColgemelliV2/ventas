@@ -113,25 +113,59 @@ export async function recordSale(saleData: SaleData) {
 // --- Dashboard Actions ---
 
 export async function getDashboardData(): Promise<{data: DashboardData | null, error: string | null}> {
-    const { data, error } = await supabase.rpc('get_dashboard_summary');
+    const { data, error } = await supabase
+        .from('ventas')
+        .select('subtotal');
 
     if (error) {
         console.error('Error fetching dashboard summary:', error);
         return { data: null, error: error.message };
     }
 
-    return { data: (data && data[0]) || { total_revenue: 0, total_sales: 0 }, error: null };
+    const total_revenue = data.reduce((acc, sale) => acc + sale.subtotal, 0);
+    const total_sales = data.length;
+
+    return { data: { total_revenue, total_sales }, error: null };
 }
 
-
 export async function getSalesByProduct(): Promise<{data: ProductSale[] | null, error: string | null}> {
-    const { data, error } = await supabase.rpc('get_sales_by_product');
-
+    const { data, error } = await supabase
+        .from('detalle_ventas')
+        .select(`
+            cantidad,
+            subtotal,
+            productos ( id, nombre )
+        `);
+    
     if (error) {
         console.error('Error fetching sales by product:', error);
         return { data: null, error: error.message };
     }
-    return { data: data || [], error: null };
+
+    const salesMap = new Map<number, ProductSale>();
+
+    for (const detail of data) {
+        if (!detail.productos) continue;
+
+        const productId = detail.productos.id;
+        const existingEntry = salesMap.get(productId);
+
+        if (existingEntry) {
+            existingEntry.total_vendido += detail.cantidad;
+            existingEntry.recaudo_total += detail.subtotal;
+        } else {
+            salesMap.set(productId, {
+                producto_id: productId,
+                nombre: detail.productos.nombre,
+                total_vendido: detail.cantidad,
+                recaudo_total: detail.subtotal,
+            });
+        }
+    }
+    
+    const result = Array.from(salesMap.values()).sort((a,b) => b.total_vendido - a.total_vendido);
+
+    return { data: result, error: null };
 }
 
 export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, error: string | null}> {
