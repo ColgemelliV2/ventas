@@ -123,7 +123,7 @@ export default function SalesPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          <Image src="https://btwhvavwqkzifiuhgcao.supabase.co/storage/v1/object/sign/ventas/Logo%20Slogan%20Nuevo%20FINAL-05.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iZmZlYzIyMi0yZGUxLTRmNWYtYWJkMC0zNzI5MjAzOGRmMGYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ2ZW50YXMvTG9nbyBTbG9nYW4gTnVldm8gRklOQUwtMDUucG5nIiwiaWF0IjoxNzUyODkwNjg1LCJleHAiOjE3ODQ0MjY2ODV9.-ae3rFAIBIplNEOlfrdApUM7i52w35AeKlBJrwAjumk" alt="Logo" width={200} height={47} />
+          <Image src="https://btwhvavwqkzifiuhgcao.supabase.co/storage/v1/object/sign/ventas/Logo%20Slogan%20Nuevo%20FINAL-05.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iZmZlYzIyMi0yZGUxLTRmNWYtYWJkMC0zNzI5MjAzOGRmMGYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ2ZW50YXMvTG9nbyBTbG9nYW4gTnVldm8gRklOQUwtMDUucG5nIiwiaWF0IjoxNzUyODkwNjg1LCJleHAiOjE3ODQ0MjY2ODV9.-ae3rFAIBIplNEOlfrdApUM7i52w35AeKlBJrwAjumk" alt="Logo" width={200} height={47} unoptimized />
           <div className="flex items-center gap-4">
             <span className="hidden md:inline text-sm text-muted-foreground">Cajero: {user.nombre_completo}</span>
              {user.username === 'administrador' && (
