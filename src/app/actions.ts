@@ -32,7 +32,6 @@ export async function getProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from('productos')
     .select('*')
-    .eq('activo', true)
     .order('nombre', { ascending: true });
 
   if (error) {
@@ -210,4 +209,36 @@ export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, e
     });
     
     return { data: ventasConDetalles, error: null };
+}
+
+// --- Product Management Actions ---
+export async function createProduct(productData: Omit<Product, 'id' | 'created_at'>) {
+    const { data, error } = await supabase
+        .from('productos')
+        .insert([productData])
+        .select()
+        .single();
+    
+    if (error) {
+        console.error("Error creating product:", error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+}
+
+export async function updateProduct(productId: number, productData: Partial<Omit<Product, 'id' | 'created_at'>>) {
+    const { data, error } = await supabase
+        .from('productos')
+        .update(productData)
+        .eq('id', productId)
+        .select()
+        .single();
+
+    if (error) {
+        console.error(`Error updating product ${productId}:`, error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
 }
