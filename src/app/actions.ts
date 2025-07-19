@@ -144,105 +144,117 @@ export async function recordSale(saleData: SaleData) {
 
 export async function getDashboardData(): Promise<{data: DashboardData | null, error: string | null}> {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-        .from('ventas')
-        .select('subtotal');
+    try {
+        const { data, error } = await supabase
+            .from('ventas')
+            .select('subtotal');
 
-    if (error) {
-        console.error('Error fetching dashboard summary:', error);
-        return { data: null, error: error.message };
+        if (error) {
+            console.error('Error fetching dashboard summary:', error);
+            return { data: null, error: error.message };
+        }
+
+        const total_revenue = data.reduce((acc, sale) => acc + sale.subtotal, 0);
+        const total_sales = data.length;
+
+        return { data: { total_revenue, total_sales }, error: null };
+    } catch (e: any) {
+        return { data: null, error: e.message };
     }
-
-    const total_revenue = data.reduce((acc, sale) => acc + sale.subtotal, 0);
-    const total_sales = data.length;
-
-    return { data: { total_revenue, total_sales }, error: null };
 }
 
 export async function getSalesByProduct(): Promise<{data: ProductSale[] | null, error: string | null}> {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-        .from('detalle_ventas')
-        .select(`
-            cantidad,
-            subtotal,
-            productos ( id, nombre )
-        `);
-    
-    if (error) {
-        console.error('Error fetching sales by product:', error);
-        return { data: null, error: error.message };
-    }
-
-    const salesMap = new Map<number, ProductSale>();
-
-    for (const detail of data) {
-        if (!detail.productos) continue;
-
-        const productId = detail.productos.id;
-        const existingEntry = salesMap.get(productId);
-
-        if (existingEntry) {
-            existingEntry.total_vendido += detail.cantidad;
-            existingEntry.recaudo_total += detail.subtotal;
-        } else {
-            salesMap.set(productId, {
-                producto_id: productId,
-                nombre: detail.productos.nombre,
-                total_vendido: detail.cantidad,
-                recaudo_total: detail.subtotal,
-            });
+    try {
+        const { data, error } = await supabase
+            .from('detalle_ventas')
+            .select(`
+                cantidad,
+                subtotal,
+                productos ( id, nombre )
+            `);
+        
+        if (error) {
+            console.error('Error fetching sales by product:', error);
+            return { data: null, error: error.message };
         }
-    }
-    
-    const result = Array.from(salesMap.values()).sort((a,b) => b.total_vendido - a.total_vendido);
 
-    return { data: result, error: null };
+        const salesMap = new Map<number, ProductSale>();
+
+        for (const detail of data) {
+            if (!detail.productos) continue;
+
+            const productId = detail.productos.id;
+            const existingEntry = salesMap.get(productId);
+
+            if (existingEntry) {
+                existingEntry.total_vendido += detail.cantidad;
+                existingEntry.recaudo_total += detail.subtotal;
+            } else {
+                salesMap.set(productId, {
+                    producto_id: productId,
+                    nombre: detail.productos.nombre,
+                    total_vendido: detail.cantidad,
+                    recaudo_total: detail.subtotal,
+                });
+            }
+        }
+        
+        const result = Array.from(salesMap.values()).sort((a,b) => b.total_vendido - a.total_vendido);
+
+        return { data: result, error: null };
+    } catch (e: any) {
+        return { data: null, error: e.message };
+    }
 }
 
 export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, error: string | null}> {
     const supabase = getSupabaseClient();
-    const { data: ventas, error: ventasError } = await supabase
-        .from('ventas')
-        .select(`
-            *,
-            cajeros ( nombre_completo )
-        `)
-        .order('fecha_venta', { ascending: false });
+    try {
+        const { data: ventas, error: ventasError } = await supabase
+            .from('ventas')
+            .select(`
+                *,
+                cajeros ( nombre_completo )
+            `)
+            .order('fecha_venta', { ascending: false });
 
-    if (ventasError) {
-        console.error('Error fetching sales:', ventasError);
-        return { data: null, error: ventasError.message };
+        if (ventasError) {
+            console.error('Error fetching sales:', ventasError);
+            return { data: null, error: ventasError.message };
+        }
+
+        const { data: detalles, error: detallesError } = await supabase
+            .from('detalle_ventas')
+            .select(`
+                *,
+                productos ( nombre )
+            `);
+        
+        if (detallesError) {
+            console.error('Error fetching sale details:', detallesError);
+            return { data: null, error: detallesError.message };
+        }
+
+        const ventasConDetalles = (ventas || []).map(venta => {
+            const detallesDeVenta: DetalleVentaConNombre[] = (detalles || [])
+                .filter(d => d.venta_id === venta.id)
+                .map(d => ({
+                    ...d,
+                    nombre_producto: d.productos?.nombre || 'Producto desconocido'
+                }));
+
+            return {
+                ...venta,
+                cajero_nombre: venta.cajeros?.nombre_completo || 'Cajero desconocido',
+                detalles: detallesDeVenta
+            };
+        });
+        
+        return { data: ventasConDetalles, error: null };
+    } catch (e: any) {
+        return { data: null, error: e.message };
     }
-
-    const { data: detalles, error: detallesError } = await supabase
-        .from('detalle_ventas')
-        .select(`
-            *,
-            productos ( nombre )
-        `);
-    
-    if (detallesError) {
-        console.error('Error fetching sale details:', detallesError);
-        return { data: null, error: detallesError.message };
-    }
-
-    const ventasConDetalles = (ventas || []).map(venta => {
-        const detallesDeVenta: DetalleVentaConNombre[] = (detalles || [])
-            .filter(d => d.venta_id === venta.id)
-            .map(d => ({
-                ...d,
-                nombre_producto: d.productos?.nombre || 'Producto desconocido'
-            }));
-
-        return {
-            ...venta,
-            cajero_nombre: venta.cajeros?.nombre_completo || 'Cajero desconocido',
-            detalles: detallesDeVenta
-        };
-    });
-    
-    return { data: ventasConDetalles, error: null };
 }
 
 // --- Product Management Actions ---
