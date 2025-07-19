@@ -89,12 +89,14 @@ export default function ProductsPage() {
   };
 
   useEffect(() => {
-    if (!authLoading && (!user || user.username !== 'administrador')) {
-      router.push('/');
-    } else if (user) {
-      fetchProducts();
+    if (!authLoading) {
+      if (!user || user.username !== 'administrador') {
+        router.push('/');
+      } else {
+        fetchProducts();
+      }
     }
-  }, [user, authLoading, router, toast]);
+  }, [user, authLoading, router]);
 
   const handleAddNew = () => {
     setEditingProduct(null);
@@ -139,11 +141,11 @@ export default function ProductsPage() {
     }
   };
 
-  if (authLoading || loadingProducts) {
+  if (authLoading || (!user && !authLoading)) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="space-y-4 p-8 w-full max-w-4xl">
-          <h1 className="text-3xl font-bold text-primary">Cargando Productos...</h1>
+          <h1 className="text-3xl font-bold text-primary">Cargando...</h1>
           <Skeleton className="h-96 w-full" />
         </div>
       </div>
@@ -181,34 +183,42 @@ export default function ProductsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Precio</TableHead>
-                  <TableHead>Activo</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.length > 0 ? products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.nombre}</TableCell>
-                    <TableCell>{formatCurrency(product.precio)}</TableCell>
-                    <TableCell>{product.activo ? 'Sí' : 'No'}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )) : (
+             {loadingProducts ? (
+              <div className="space-y-4">
+                 <Skeleton className="h-12 w-full" />
+                 <Skeleton className="h-12 w-full" />
+                 <Skeleton className="h-12 w-full" />
+              </div>
+             ) : (
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">No hay productos.</TableCell>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Precio</TableHead>
+                    <TableHead>Activo</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {products.length > 0 ? products.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">{product.nombre}</TableCell>
+                      <TableCell>{formatCurrency(product.precio)}</TableCell>
+                      <TableCell>{product.activo ? 'Sí' : 'No'}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground">No hay productos.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+             )}
           </CardContent>
         </Card>
       </main>
