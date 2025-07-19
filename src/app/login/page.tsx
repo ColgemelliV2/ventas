@@ -48,7 +48,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
-          <Image src="https://storage.googleapis.com/project-os-frontend/codestudio/v2/240722/161400-u7pnd2.png" alt="Logo" width={300} height={71} className="mx-auto mb-4" />
+          <Image src="https://btwhvavwqkzifiuhgcao.supabase.co/storage/v1/object/sign/ventas/Logo%20Slogan%20Nuevo%20FINAL-05.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iZmZlYzIyMi0yZGUxLTRmNWYtYWJkMC0zNzI5MjAzOGRmMGYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ2ZW50YXMvTG9nbyBTbG9nYW4gTnVldm8gRklOQUwtMDUucG5nIiwiaWF0IjoxNzUyODkwNjg1LCJleHAiOjE3ODQ0MjY2ODV9.-ae3rFAIBIplNEOlfrdApUM7i52w35AeKlBJrwAjumk" alt="Logo" width={300} height={71} className="mx-auto mb-4" />
           <CardTitle className="text-3xl font-bold text-primary">Ventas Bingo 2025</CardTitle>
           <CardDescription>Ingrese sus credenciales para continuar</CardDescription>
         </CardHeader>
