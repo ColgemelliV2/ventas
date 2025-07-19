@@ -1,9 +1,38 @@
 'use server';
 
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import type { Product, SaleData, DashboardData, ProductSale, VentaConDetalles, DetalleVentaConNombre } from '@/types';
 
+// Helper function to get the Supabase client within an action
+// This ensures env vars are available at runtime.
+const getSupabaseClient = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error('Supabase URL and Anon Key are required.');
+    }
+    return createClient(supabaseUrl, supabaseAnonKey);
+}
+
+const getSupabaseAdminClient = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY;
+
+    if (!supabaseUrl || !serviceKey) {
+        throw new Error("Supabase Service Key or URL not found. Admin actions will fail.");
+    }
+    return createClient(supabaseUrl, serviceKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    });
+}
+
+
 export async function login(credentials: { username: string; password?: string }) {
+  const supabase = getSupabaseClient();
   const { data: user, error } = await supabase
     .from('cajeros')
     .select('*')
@@ -29,6 +58,7 @@ export async function login(credentials: { username: string; password?: string }
 }
 
 export async function getProducts(): Promise<Product[]> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('productos')
     .select('*')
@@ -69,6 +99,7 @@ export async function getProducts(): Promise<Product[]> {
 
 
 export async function recordSale(saleData: SaleData) {
+  const supabase = getSupabaseClient();
   try {
     const { data: ventaData, error: ventaError } = await supabase
       .from('ventas')
@@ -112,6 +143,7 @@ export async function recordSale(saleData: SaleData) {
 // --- Dashboard Actions ---
 
 export async function getDashboardData(): Promise<{data: DashboardData | null, error: string | null}> {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
         .from('ventas')
         .select('subtotal');
@@ -128,6 +160,7 @@ export async function getDashboardData(): Promise<{data: DashboardData | null, e
 }
 
 export async function getSalesByProduct(): Promise<{data: ProductSale[] | null, error: string | null}> {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
         .from('detalle_ventas')
         .select(`
@@ -168,6 +201,7 @@ export async function getSalesByProduct(): Promise<{data: ProductSale[] | null, 
 }
 
 export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, error: string | null}> {
+    const supabase = getSupabaseClient();
     const { data: ventas, error: ventasError } = await supabase
         .from('ventas')
         .select(`
@@ -213,6 +247,7 @@ export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, e
 
 // --- Product Management Actions ---
 export async function createProduct(productData: Omit<Product, 'id' | 'created_at'>) {
+    const supabaseAdmin = getSupabaseAdminClient();
     if (!supabaseAdmin) {
         return { success: false, error: "El cliente de administrador de Supabase no está inicializado. Revisa la SUPABASE_SERVICE_KEY." };
     }
@@ -231,6 +266,7 @@ export async function createProduct(productData: Omit<Product, 'id' | 'created_a
 }
 
 export async function updateProduct(productId: number, productData: Partial<Omit<Product, 'id' | 'created_at'>>) {
+    const supabaseAdmin = getSupabaseAdminClient();
     if (!supabaseAdmin) {
         return { success: false, error: "El cliente de administrador de Supabase no está inicializado. Revisa la SUPABASE_SERVICE_KEY." };
     }

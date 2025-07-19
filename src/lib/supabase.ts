@@ -1,40 +1,18 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-let supabaseClient: ReturnType<typeof createClient> | null = null;
-let supabaseAdminClient: ReturnType<typeof createClient> | null = null;
+// This file is kept for type compatibility but the clients
+// are now created on-demand inside server actions in actions.ts
+// to ensure environment variables are loaded correctly.
 
-function getSupabaseClient() {
-    if (supabaseClient) {
-        return supabaseClient;
-    }
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Supabase URL and Anon Key are required. Check your .env.local file.');
-    }
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-    return supabaseClient;
-}
+export const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-function getSupabaseAdminClient() {
-    if (supabaseAdminClient) {
-        return supabaseAdminClient;
-    }
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_KEY;
-    if (!supabaseUrl || !serviceKey) {
-        console.warn("Supabase Service Key or URL not found. Admin actions will fail.");
-        return null;
-    }
-    supabaseAdminClient = createClient(supabaseUrl, serviceKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    });
-    return supabaseAdminClient;
-}
-
-export const supabase = getSupabaseClient();
-export const supabaseAdmin = getSupabaseAdminClient();
+export const supabaseAdmin = process.env.SUPABASE_SERVICE_KEY
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY!
+    )
+  : null;
