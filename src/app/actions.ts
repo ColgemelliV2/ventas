@@ -24,22 +24,24 @@ export async function login(credentials: { username: string; password?: string }
     return { success: false, error: 'La cuenta del cajero está inactiva.' };
   }
   
-  // Exclude password_hash from the returned user object
   const { password_hash, ...cajeroData } = user;
   
   return { success: true, user: cajeroData as Cajero };
 }
 
-export async function getProducts(): Promise<Product[]> {
-  const supabase = createClient();
-  const { data, error } = await supabase.from('productos').select('*').order('nombre', { ascending: true });
+export async function getProductsForSalesPage(): Promise<{data: Product[] | null, error: string | null}> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.from('productos').select('*').order('nombre', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching products:', error);
-    throw new Error('Could not fetch products.');
+    if (error) {
+      console.error('Error fetching products:', error);
+      return { data: null, error: 'Could not fetch products.' };
+    }
+    return { data: data || [], error: null };
+  } catch (e: any) {
+    return {data: null, error: e.message };
   }
-
-  return data || [];
 }
 
 
