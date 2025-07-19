@@ -21,6 +21,7 @@ export default function SalesPage() {
   const { toast } = useToast();
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
