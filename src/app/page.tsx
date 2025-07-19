@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut, Tags, ShoppingCart, LayoutDashboard } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
@@ -122,7 +123,7 @@ export default function SalesPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          <h1 className="text-2xl font-bold text-primary">Ventas Bingo 2025</h1>
+          <Image src="https://storage.googleapis.com/project-os-frontend/codestudio/v2/240722/161400-u7pnd2.png" alt="Logo" width={200} height={47} />
           <div className="flex items-center gap-4">
             <span className="hidden md:inline text-sm text-muted-foreground">Cajero: {user.nombre_completo}</span>
              {user.username === 'administrador' && (
