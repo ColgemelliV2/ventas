@@ -1,7 +1,7 @@
 'use server';
 
 import { supabase } from '@/lib/supabase';
-import type { SaleData } from '@/types';
+import type { Product, SaleData } from '@/types';
 
 export async function login(credentials: { username: string; password?: string }) {
   const { data: user, error } = await supabase
@@ -15,7 +15,7 @@ export async function login(credentials: { username: string; password?: string }
     return { success: false, error: 'Usuario o contraseña incorrectos.' };
   }
 
-  // NOTE: This is a plain text password check. 
+  // NOTE: This is a plain text password check.
   // For a real production app, you should use a secure hashing library like bcrypt to compare hashes.
   if (user.password_hash !== credentials.password) {
     return { success: false, error: 'Usuario o contraseña incorrectos.' };
@@ -31,7 +31,7 @@ export async function login(credentials: { username: string; password?: string }
   return { success: true, user: cajeroData };
 }
 
-export async function getProducts() {
+export async function getProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from('productos')
     .select('*')
@@ -42,8 +42,39 @@ export async function getProducts() {
     console.error('Error fetching products:', error);
     throw new Error('Could not fetch products.');
   }
-  return data;
+
+  // Custom sorting logic
+  const getCategoryOrder = (productName: string): number => {
+    const lowerCaseName = productName.toLowerCase();
+    
+    // Keywords for food
+    const foodKeywords = ['empanada', 'pastel', 'chorizo', 'arepa', 'hamburguesa', 'perro', 'pizza', 'torta', 'dedito'];
+    // Keywords for drinks
+    const drinkKeywords = ['gaseosa', 'agua', 'jugo', 'cerveza', 'limonada', 'refajo', 'malta'];
+    
+    if (foodKeywords.some(keyword => lowerCaseName.includes(keyword))) {
+      return 1; // Foods first
+    }
+    if (drinkKeywords.some(keyword => lowerCaseName.includes(keyword))) {
+      return 2; // Drinks second
+    }
+    return 3; // Others last
+  };
+
+  const sortedData = data.sort((a, b) => {
+    const orderA = getCategoryOrder(a.nombre);
+    const orderB = getCategoryOrder(b.nombre);
+
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    // If they are in the same category, sort alphabetically
+    return a.nombre.localeCompare(b.nombre);
+  });
+
+  return sortedData;
 }
+
 
 export async function recordSale(saleData: SaleData) {
   try {
