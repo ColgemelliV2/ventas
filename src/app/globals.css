@@ -14,7 +14,7 @@ body {
     --card-foreground: 224 44% 14%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 44% 14%;
-    --primary: 221 83% 53%; /* Blue */
+    --primary: 238 33% 14%; /* Dark Blue from #17182f */
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -26,7 +26,7 @@ body {
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 221 83% 53%; /* Blue */
+    --ring: 238 33% 14%; /* Dark Blue from #17182f */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
