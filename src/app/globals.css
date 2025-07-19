@@ -32,6 +32,11 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --chart-6: 190 75% 45%;
+    --chart-7: 50 85% 50%;
+    --chart-8: 310 70% 50%;
+    --chart-9: 100 65% 50%;
+    --chart-10: 250 70% 60%;
     --radius: 0.5rem;
   }
   .dark {
@@ -59,6 +64,11 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --chart-6: 190 75% 45%;
+    --chart-7: 50 85% 50%;
+    --chart-8: 310 70% 50%;
+    --chart-9: 100 65% 50%;
+    --chart-10: 250 70% 60%;
   }
 }
 
@@ -70,5 +80,3 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
-    

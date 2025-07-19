@@ -22,7 +22,7 @@ const formatCurrency = (value: number) => {
     }).format(value);
 };
 
-const CHART_COLORS = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5'];
+const CHART_COLORS = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5', '--chart-6', '--chart-7', '--chart-8', '--chart-9', '--chart-10'];
 
 type ProductSaleWithColor = ProductSale & { color: string };
 
@@ -240,5 +240,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
