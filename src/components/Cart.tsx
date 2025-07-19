@@ -19,7 +19,7 @@ interface CartProps {
 
 export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }: CartProps) {
   const [cashReceived, setCashReceived] = useState('');
-  
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -28,6 +28,21 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
       maximumFractionDigits: 0,
     }).format(value);
   }
+
+  const parseFormattedNumber = (value: string) => {
+    return parseFloat(value.replace(/\./g, ''));
+  };
+
+  const handleCashChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/\./g, '');
+    if (!isNaN(Number(rawValue))) {
+        const formattedValue = new Intl.NumberFormat('es-CO').format(Number(rawValue));
+        setCashReceived(formattedValue);
+    } else {
+        setCashReceived('');
+    }
+  };
+
 
   const updateQuantity = (productId: number, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -49,7 +64,7 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
   }, [cartItems]);
 
   const change = useMemo(() => {
-    const cash = parseFloat(cashReceived);
+    const cash = parseFormattedNumber(cashReceived);
     if (!isNaN(cash) && cash >= subtotal) {
       return cash - subtotal;
     }
@@ -57,13 +72,19 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
   }, [cashReceived, subtotal]);
 
   const canFinalize = useMemo(() => {
-    const cash = parseFloat(cashReceived);
-    return cartItems.length > 0 && !isNaN(cash) && cash >= subtotal && !isSubmitting;
+    if (cartItems.length === 0 || isSubmitting) {
+      return false;
+    }
+    const cash = parseFormattedNumber(cashReceived);
+    // Allow finalizing if cash input is empty, or if it's a valid number >= subtotal
+    return cashReceived === '' || (!isNaN(cash) && cash >= subtotal);
   }, [cashReceived, subtotal, cartItems, isSubmitting]);
 
   const handleFinalize = () => {
     if(canFinalize) {
-      onRecordSale(parseFloat(cashReceived)).then(() => {
+      const cash = parseFormattedNumber(cashReceived);
+      const cashToRecord = !isNaN(cash) ? cash : subtotal;
+      onRecordSale(cashToRecord).then(() => {
         setCashReceived('');
       });
     }
@@ -130,11 +151,11 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
             <label htmlFor="cash-received" className="font-semibold">Efectivo</label>
             <Input
               id="cash-received"
-              type="number"
+              type="text"
               placeholder="0"
               className="w-32 text-right font-mono"
               value={cashReceived}
-              onChange={(e) => setCashReceived(e.target.value)}
+              onChange={handleCashChange}
               disabled={isSubmitting || cartItems.length === 0}
             />
           </div>
