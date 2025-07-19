@@ -36,6 +36,7 @@ export async function login(credentials: { username: string; password?: string }
     return { success: false, error: 'La cuenta del cajero está inactiva.' };
   }
   
+  // Exclude password_hash from the returned user object
   const { password_hash, ...cajeroData } = user;
   
   return { success: true, user: cajeroData };
@@ -123,6 +124,56 @@ export async function recordSale(saleData: SaleData) {
     return { success: false, error: (error as Error).message };
   }
 }
+
+// --- Product Management Actions ---
+
+type ProductFormData = {
+  nombre: string;
+  precio: number;
+  imagen_url?: string;
+  activo: boolean;
+};
+
+export async function createProduct(productData: ProductFormData) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+        .from('productos')
+        .insert([{ 
+            ...productData, 
+            imagen_url: productData.imagen_url || null 
+        }])
+        .select()
+        .single();
+    
+    if (error) {
+        console.error('Error creating product:', error);
+        return { success: false, error: 'No se pudo crear el producto. ' + error.message };
+    }
+
+    return { success: true, data };
+}
+
+
+export async function updateProduct(id: number, productData: ProductFormData) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+        .from('productos')
+        .update({ 
+            ...productData, 
+            imagen_url: productData.imagen_url || null 
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error(`Error updating product ${id}:`, error);
+        return { success: false, error: 'No se pudo actualizar el producto. ' + error.message };
+    }
+
+    return { success: true, data };
+}
+
 
 // --- Dashboard Actions ---
 

@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export interface Product {
   id: number;
   nombre: string;
@@ -64,3 +66,13 @@ export interface VentaConDetalles extends Venta {
     cajero_nombre: string;
     detalles: DetalleVentaConNombre[];
 }
+
+// --- Form Validation Schemas ---
+
+export const ProductFormSchema = z.object({
+  id: z.number().optional(),
+  nombre: z.string().min(3, { message: 'El nombre debe tener al menos 3 caracteres.' }),
+  precio: z.coerce.number().positive({ message: 'El precio debe ser un número positivo.' }),
+  imagen_url: z.string().url({ message: 'Debe ser una URL válida.' }).or(z.literal('')).optional(),
+  activo: z.boolean().default(true),
+});

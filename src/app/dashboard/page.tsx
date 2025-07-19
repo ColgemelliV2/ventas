@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import useAuth from '@/hooks/useAuth';
 import { getDashboardData, getSalesByProduct, getAllSales } from '@/app/actions';
 import type { DashboardData, ProductSale, VentaConDetalles } from '@/types';
@@ -9,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BarChart2, DollarSign, List, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, BarChart2, DollarSign, List, ShoppingBag, AlertTriangle, Package } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const formatCurrency = (value: number) => {
@@ -106,10 +107,18 @@ export default function DashboardPage() {
         <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
             <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
                 <h1 className="text-2xl font-bold text-primary">Dashboard de Administrador</h1>
-                <Button variant="outline" onClick={() => router.push('/')}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Volver a Ventas
-                </Button>
+                <div className="flex items-center gap-4">
+                  <Button variant="secondary" asChild>
+                    <Link href="/dashboard/products">
+                      <Package className="mr-2 h-4 w-4" />
+                      Gestionar Productos
+                    </Link>
+                  </Button>
+                  <Button variant="outline" onClick={() => router.push('/')}>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Volver a Ventas
+                  </Button>
+                </div>
             </div>
       </header>
       <main className="container mx-auto p-4 md:p-6 space-y-6">
