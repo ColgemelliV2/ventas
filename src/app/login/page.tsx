@@ -42,7 +42,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-primary">Bingo SalesMate</CardTitle>
+          <CardTitle className="text-3xl font-bold text-primary">Ventas Bingo 2025</CardTitle>
           <CardDescription>Ingrese sus credenciales para continuar</CardDescription>
         </CardHeader>
         <CardContent>

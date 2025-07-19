@@ -121,7 +121,7 @@ export default function SalesPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          <h1 className="text-2xl font-bold text-primary">Bingo SalesMate</h1>
+          <h1 className="text-2xl font-bold text-primary">Ventas Bingo 2025</h1>
           <div className="flex items-center gap-4">
             <span className="hidden md:inline text-sm text-muted-foreground">Cajero: {user.nombre_completo}</span>
             <Button variant="outline" size="sm" onClick={logout}>

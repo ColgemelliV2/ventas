@@ -57,7 +57,7 @@ const ReceiptModal = ({ isOpen, onClose, saleData, cajero }: ReceiptModalProps) 
           `}</style>
           <div className="p-6">
             <DialogHeader>
-              <DialogTitle className="text-center text-2xl font-bold">Bingo SalesMate</DialogTitle>
+              <DialogTitle className="text-center text-2xl font-bold">Ventas Bingo 2025</DialogTitle>
               <p className="text-center text-sm text-muted-foreground">Recibo de Venta</p>
             </DialogHeader>
             <div className="my-4 text-sm">

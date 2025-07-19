@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'Bingo SalesMate',
+  title: 'Ventas Bingo 2025',
   description: 'Point of sale system for bingo events.',
 };
 
