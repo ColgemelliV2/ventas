@@ -142,15 +142,14 @@ export async function createProduct(productData: ProductFormData) {
             ...productData, 
             imagen_url: productData.imagen_url || null 
         }])
-        .select()
-        .single();
+        .select();
     
     if (error) {
         console.error('Error creating product:', error);
         return { success: false, error: 'No se pudo crear el producto. ' + error.message };
     }
 
-    return { success: true, data };
+    return { success: true, data: data ? data[0] : null };
 }
 
 
@@ -163,15 +162,14 @@ export async function updateProduct(id: number, productData: ProductFormData) {
             imagen_url: productData.imagen_url || null 
         })
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
     if (error) {
         console.error(`Error updating product ${id}:`, error);
         return { success: false, error: 'No se pudo actualizar el producto. ' + error.message };
     }
 
-    return { success: true, data };
+    return { success: true, data: data ? data[0] : null };
 }
 
 
