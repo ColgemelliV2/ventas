@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MinusCircle, PlusCircle, XCircle, ShoppingCart, Loader2 } from 'lucide-react';
+import { MinusCircle, PlusCircle, XCircle, ShoppingCart, Loader2, Trash2 } from 'lucide-react';
 import type { CartItem } from '@/types';
 
 interface CartProps {
@@ -38,6 +38,11 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
       );
     }
   };
+  
+  const handleClearCart = () => {
+    setCart([]);
+    setCashReceived('');
+  };
 
   const subtotal = useMemo(() => {
     return cartItems.reduce((acc, item) => acc + item.precio * item.quantity, 0);
@@ -67,10 +72,23 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <ShoppingCart className="text-accent" />
-          Venta Actual
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <ShoppingCart className="text-accent" />
+            Venta Actual
+          </CardTitle>
+          {cartItems.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClearCart}
+              className="h-8 w-8 text-destructive/80 hover:text-destructive"
+              aria-label="Vaciar venta"
+            >
+              <Trash2 className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <ScrollArea className="h-64 pr-4">
