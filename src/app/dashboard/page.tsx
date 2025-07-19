@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
 import { getDashboardData, getSalesByProduct, getAllSales } from '@/app/actions';
 import type { DashboardData, ProductSale, VentaConDetalles } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, BarChart2, DollarSign, List, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,6 +21,10 @@ const formatCurrency = (value: number) => {
       maximumFractionDigits: 0,
     }).format(value);
 };
+
+const CHART_COLORS = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5'];
+
+type ProductSaleWithColor = ProductSale & { color: string };
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -71,6 +75,13 @@ export default function DashboardPage() {
       }
     }
   }, [user, authLoading, router]);
+
+  const productSalesWithColors = useMemo((): ProductSaleWithColor[] => {
+    return productSales.map((sale, index) => ({
+      ...sale,
+      color: `hsl(var(${CHART_COLORS[index % CHART_COLORS.length]}))`,
+    }));
+  }, [productSales]);
 
   if (authLoading || (!error && loading)) {
     return (
@@ -144,12 +155,16 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="pl-2">
                     <ResponsiveContainer width="100%" height={350}>
-                        <BarChart data={productSales}>
+                        <BarChart data={productSalesWithColors}>
                              <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="nombre" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} interval={0} angle={-45} textAnchor="end" height={100} />
                             <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
-                            <Tooltip formatter={(value) => [`${value} unidades`, "Vendido"]} cursor={{fill: 'hsl(var(--accent) / 0.2)'}}/>
-                            <Bar dataKey="total_vendido" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                            <Tooltip formatter={(value, name, props) => [`${value} unidades`, props.payload.nombre]} cursor={{fill: 'hsl(var(--accent) / 0.2)'}}/>
+                            <Bar dataKey="total_vendido" radius={[4, 4, 0, 0]}>
+                                {productSalesWithColors.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                            </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -225,3 +240,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
