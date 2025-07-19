@@ -9,10 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BarChart2, DollarSign, List, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, BarChart2, DollarSign, List, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const formatCurrency = (value: number) => {
+    if (typeof value !== 'number') return '$0';
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [productSales, setProductSales] = useState<ProductSale[]>([]);
   const [allSales, setAllSales] = useState<VentaConDetalles[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading) {
@@ -37,16 +39,18 @@ export default function DashboardPage() {
         const fetchData = async () => {
           try {
             setLoading(true);
+            setError(null);
             const [dashboardData, salesByProductData, allSalesData] = await Promise.all([
               getDashboardData(),
               getSalesByProduct(),
               getAllSales(),
             ]);
             setData(dashboardData);
-            setProductSales(salesByProductData);
-            setAllSales(allSalesData);
-          } catch (error) {
-            console.error('Error fetching dashboard data:', error);
+            setProductSales(salesByProductData || []);
+            setAllSales(allSalesData || []);
+          } catch (err) {
+            console.error('Error fetching dashboard data:', err);
+            setError('No se pudieron cargar los datos del dashboard. Es posible que las funciones de la base de datos (RPC) no estén creadas. Por favor, revise las instrucciones.');
           } finally {
             setLoading(false);
           }
@@ -56,16 +60,16 @@ export default function DashboardPage() {
     }
   }, [user, authLoading, router]);
 
-  if (authLoading || loading) {
+  if (authLoading || (!error && loading)) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="space-y-4 p-8">
+        <div className="space-y-4 p-8 w-full max-w-4xl">
             <h1 className="text-3xl font-bold text-primary">Cargando Dashboard...</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Skeleton className="h-32 w-full" />
                 <Skeleton className="h-32 w-full" />
-                <Skeleton className="h-64 md:col-span-2 w-full" />
             </div>
+             <Skeleton className="h-64 w-full" />
             <Skeleton className="h-96 w-full" />
         </div>
       </div>
@@ -86,14 +90,27 @@ export default function DashboardPage() {
             </div>
       </header>
       <main className="container mx-auto p-4 md:p-6 space-y-6">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {error && (
+             <Card className="border-destructive bg-destructive/10">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-destructive">
+                        <AlertTriangle/> Error al cargar los datos
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-destructive/90">{error}</p>
+                    <p className='mt-2 text-sm text-muted-foreground'>Asegúrate de haber ejecutado el script SQL necesario en el "SQL Editor" de tu proyecto de Supabase.</p>
+                </CardContent>
+            </Card>
+        )}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Recaudado</CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(data?.totalRevenue || 0)}</div>
+                    <div className="text-2xl font-bold">{formatCurrency(data?.total_revenue || 0)}</div>
                 </CardContent>
             </Card>
             <Card>
@@ -102,14 +119,14 @@ export default function DashboardPage() {
                     <ShoppingBag className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">+{data?.totalSales || 0}</div>
+                    <div className="text-2xl font-bold">+{data?.total_sales || 0}</div>
                 </CardContent>
             </Card>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
             <Card className="lg:col-span-4">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><BarChart2 className="text-accent"/>Ventas por Producto</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><BarChart2 className="text-accent"/>Ventas por Producto (Unidades)</CardTitle>
                 </CardHeader>
                 <CardContent className="pl-2">
                     <ResponsiveContainer width="100%" height={350}>
@@ -136,12 +153,16 @@ export default function DashboardPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {productSales.map(p => (
+                            {productSales.length > 0 ? productSales.map(p => (
                                 <TableRow key={p.producto_id}>
                                     <TableCell className="font-medium">{p.nombre}</TableCell>
                                     <TableCell className="text-right">{formatCurrency(p.recaudo_total)}</TableCell>
                                 </TableRow>
-                            ))}
+                            )) : (
+                                <TableRow>
+                                    <TableCell colSpan={2} className="text-center text-muted-foreground">No hay datos de ventas.</TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
@@ -163,7 +184,7 @@ export default function DashboardPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {allSales.map(sale => (
+                        {allSales.length > 0 ? allSales.map(sale => (
                             <TableRow key={sale.id}>
                                 <TableCell className="font-medium">{sale.id}</TableCell>
                                 <TableCell>{sale.cajero_nombre}</TableCell>
@@ -171,13 +192,17 @@ export default function DashboardPage() {
                                 <TableCell>
                                     <ul className='list-disc list-inside'>
                                         {sale.detalles.map(d => (
-                                            <li key={d.producto_id}>{d.cantidad} x {d.nombre_producto}</li>
+                                            <li key={`${sale.id}-${d.producto_id}`}>{d.cantidad} x {d.nombre_producto}</li>
                                         ))}
                                     </ul>
                                 </TableCell>
                                 <TableCell className="text-right">{formatCurrency(sale.subtotal)}</TableCell>
                             </TableRow>
-                        ))}
+                        )) : (
+                             <TableRow>
+                                <TableCell colSpan={5} className="text-center text-muted-foreground">No se han registrado ventas.</TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>
