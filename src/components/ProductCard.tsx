@@ -34,7 +34,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className="object-cover"
             data-ai-hint="bingo card"
-            unoptimized={!product.imagen_url}
+            unoptimized={imageUrl.startsWith('https://placehold.co')}
           />
         </div>
       </CardHeader>

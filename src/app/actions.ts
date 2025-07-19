@@ -1,14 +1,23 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/client';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import type { Product, SaleData, DashboardData, ProductSale, VentaConDetalles, DetalleVentaConNombre } from '@/types';
 
-// Helper function to get the Supabase client within an action
-// This ensures env vars are available at runtime.
+// This function creates a Supabase client.
+// It is intended to be used in Server Actions and other server-side code.
+// It reads the Supabase URL and Anon Key from environment variables.
 const getSupabaseClient = () => {
-    // The createClient function from our lib now handles env vars internally
-    return createClient();
-}
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // In a real app, you'd want more robust error handling or logging.
+    // For this example, we'll throw an error if the variables are not set.
+    throw new Error('Supabase URL and/or Anon Key are not set in environment variables.');
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey);
+};
 
 export async function login(credentials: { username: string; password?: string }) {
   const supabase = getSupabaseClient();
@@ -39,17 +48,19 @@ export async function login(credentials: { username: string; password?: string }
 
 export async function getProducts(): Promise<Product[]> {
   const supabase = getSupabaseClient();
-  const { data, error } = await supabase
-    .from('productos')
-    .select('*')
-    .order('nombre', { ascending: true });
+  const { data, error } = await supabase.from('productos').select('*');
 
   if (error) {
     console.error('Error fetching products:', error);
     throw new Error('Could not fetch products.');
   }
   
-  return data || [];
+  // Simple categorization based on name
+  const food = data?.filter(p => ['Chorizo', 'Empanada', 'Arepa'].some(f => p.nombre.includes(f))) || [];
+  const drinks = data?.filter(p => ['Gaseosa', 'Agua', 'Jugo', 'Cerveza'].some(d => p.nombre.includes(d))) || [];
+  const others = data?.filter(p => ![...food, ...drinks].map(i => i.id).includes(p.id)) || [];
+
+  return [...food, ...drinks, ...others];
 }
 
 
@@ -94,54 +105,6 @@ export async function recordSale(saleData: SaleData) {
     return { success: false, error: (error as Error).message };
   }
 }
-
-// --- Product Management Actions ---
-
-type ProductFormData = {
-  nombre: string;
-  precio: number;
-  imagen_url?: string;
-  activo: boolean;
-};
-
-export async function createProduct(productData: ProductFormData) {
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-        .from('productos')
-        .insert([{ 
-            ...productData, 
-            imagen_url: productData.imagen_url || null 
-        }])
-        .select();
-    
-    if (error) {
-        console.error('Error creating product:', error);
-        return { success: false, error: 'No se pudo crear el producto. ' + error.message };
-    }
-
-    return { success: true, data: data ? data[0] : null };
-}
-
-
-export async function updateProduct(id: number, productData: ProductFormData) {
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-        .from('productos')
-        .update({ 
-            ...productData, 
-            imagen_url: productData.imagen_url || null 
-        })
-        .eq('id', id)
-        .select();
-
-    if (error) {
-        console.error(`Error updating product ${id}:`, error);
-        return { success: false, error: 'No se pudo actualizar el producto. ' + error.message };
-    }
-
-    return { success: true, data: data ? data[0] : null };
-}
-
 
 // --- Dashboard Actions ---
 
