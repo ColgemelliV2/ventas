@@ -6,24 +6,29 @@ import useAuth from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Info } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const { toast } = useToast();
-  const [username, setUsername] = useState('cajero1');
-  const [password, setPassword] = useState('bingo123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!username || !password) {
+      toast({
+        variant: 'destructive',
+        title: 'Campos requeridos',
+        description: 'Por favor, ingrese su usuario y contraseña.',
+      });
+      return;
+    }
     setIsLoading(true);
-    // Correctly pass credentials as an object
     const result = await login({ username, password });
     setIsLoading(false);
 
@@ -64,6 +69,7 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
+                placeholder="••••••••"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -76,16 +82,6 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter>
-            <Alert>
-                <Info className="h-4 w-4" />
-                <AlertTitle>Credenciales de prueba</AlertTitle>
-                <AlertDescription>
-                    <p>Usuario: <strong>cajero1</strong></p>
-                    <p>Contraseña: <strong>bingo123</strong></p>
-                </AlertDescription>
-            </Alert>
-        </CardFooter>
       </Card>
     </main>
   );
