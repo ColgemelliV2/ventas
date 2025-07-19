@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut, Tags, ShoppingCart, LayoutDashboard } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
-import { getProductsForSalesPage, recordSale } from '@/app/actions';
+import { getProducts, recordSale } from '@/app/actions';
 import type { Product, CartItem, SaleData } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +39,7 @@ export default function SalesPage() {
     const fetchProducts = async () => {
       setIsLoadingProducts(true);
       try {
-        const result = await getProductsForSalesPage();
+        const result = await getProducts();
         if (result.error) {
           throw new Error(result.error);
         }
@@ -54,8 +54,11 @@ export default function SalesPage() {
         setIsLoadingProducts(false);
       }
     };
-    fetchProducts();
-  }, [toast]);
+
+    if (user) {
+        fetchProducts();
+    }
+  }, [user, toast]);
   
   const addToCart = (product: Product) => {
     setCart((prevCart) => {

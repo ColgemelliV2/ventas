@@ -1,10 +1,26 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/client';
-import type { Product, SaleData, DashboardData, ProductSale, VentaConDetalles, DetalleVentaConNombre, Cajero } from '@/types';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import type { Product, SaleData, DashboardData, ProductSale, VentaConDetalles, DetalleVentaConNombre, Cajero, ProductFormData } from '@/types';
+
+// Helper function to create a Supabase client.
+// It's important this is only called within server-side functions (Server Actions).
+const getSupabaseClient = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+        // In a real app, you'd want more robust error handling or logging.
+        // For this example, we'll throw an error if the variables are not set.
+        throw new Error('Supabase URL and Anon Key are required.');
+    }
+
+    return createSupabaseClient(supabaseUrl, supabaseAnonKey);
+}
+
 
 export async function login(credentials: { username: string; password?: string }) {
-  const supabase = createClient();
+  const supabase = getSupabaseClient();
   const { data: user, error } = await supabase
     .from('cajeros')
     .select('*')
@@ -29,10 +45,13 @@ export async function login(credentials: { username: string; password?: string }
   return { success: true, user: cajeroData as Cajero };
 }
 
-export async function getProductsForSalesPage(): Promise<{data: Product[] | null, error: string | null}> {
+export async function getProducts(): Promise<{data: Product[] | null, error: string | null}> {
   try {
-    const supabase = createClient();
-    const { data, error } = await supabase.from('productos').select('*').order('nombre', { ascending: true });
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('productos')
+      .select('*')
+      .order('nombre', { ascending: true }); // Simplified sorting
 
     if (error) {
       console.error('Error fetching products:', error);
@@ -46,7 +65,7 @@ export async function getProductsForSalesPage(): Promise<{data: Product[] | null
 
 
 export async function recordSale(saleData: SaleData) {
-  const supabase = createClient();
+  const supabase = getSupabaseClient();
   try {
     const { data: ventaData, error: ventaError } = await supabase
       .from('ventas')
@@ -90,7 +109,7 @@ export async function recordSale(saleData: SaleData) {
 // --- Dashboard Actions ---
 
 export async function getDashboardData(): Promise<{data: DashboardData | null, error: string | null}> {
-    const supabase = createClient();
+    const supabase = getSupabaseClient();
     try {
         const { data, error } = await supabase
             .from('ventas')
@@ -111,7 +130,7 @@ export async function getDashboardData(): Promise<{data: DashboardData | null, e
 }
 
 export async function getSalesByProduct(): Promise<{data: ProductSale[] | null, error: string | null}> {
-    const supabase = createClient();
+    const supabase = getSupabaseClient();
     try {
         const { data, error } = await supabase
             .from('detalle_ventas')
@@ -156,7 +175,7 @@ export async function getSalesByProduct(): Promise<{data: ProductSale[] | null, 
 }
 
 export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, error: string | null}> {
-    const supabase = createClient();
+    const supabase = getSupabaseClient();
     try {
         const { data: ventas, error: ventasError } = await supabase
             .from('ventas')
@@ -200,6 +219,44 @@ export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, e
         
         return { data: ventasConDetalles, error: null };
     } catch (e: any) {
+        return { data: null, error: e.message };
+    }
+}
+
+// --- Product Management Actions ---
+export async function createProduct(productData: ProductFormData): Promise<{data: Product | null, error: string | null}> {
+    const supabase = getSupabaseClient();
+    try {
+        const { data, error } = await supabase
+            .from('productos')
+            .insert({ ...productData, precio: Number(productData.precio) })
+            .select();
+
+        if (error) throw error;
+        
+        return { data: data?.[0] || null, error: null };
+
+    } catch (e: any) {
+        console.error("Error creating product:", e);
+        return { data: null, error: e.message };
+    }
+}
+
+export async function updateProduct(id: number, productData: ProductFormData): Promise<{data: Product | null, error: string | null}> {
+    const supabase = getSupabaseClient();
+    try {
+         const { data, error } = await supabase
+            .from('productos')
+            .update({ ...productData, precio: Number(productData.precio) })
+            .eq('id', id)
+            .select();
+        
+        if (error) throw error;
+        
+        return { data: data?.[0] || null, error: null };
+
+    } catch (e: any) {
+        console.error("Error updating product:", e);
         return { data: null, error: e.message };
     }
 }

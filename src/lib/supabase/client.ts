@@ -1,17 +1,11 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
-// This function creates a Supabase client for SERVER-SIDE use.
-// It reads the Supabase URL and Anon Key from environment variables.
-// In Next.js, files in .env.local are automatically loaded into process.env on the server.
-export const createClient = () => {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+// NOTE: THIS FILE IS NOT USED. The client is created directly in actions.ts
+// to ensure server-side environment variables are used correctly.
+// This is kept for reference or future client-side needs.
+// For all server-side operations, see `getSupabaseClient` in `src/app/actions.ts`.
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    // In a real app, you'd want more robust error handling or logging.
-    // For this example, we'll throw an error if the variables are not set.
-    throw new Error('Supabase URL and/or Anon Key are not set in environment variables.');
-  }
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-  return createSupabaseClient(supabaseUrl, supabaseAnonKey);
-};
+export const createClient = () => createSupabaseClient(supabaseUrl, supabaseAnonKey);

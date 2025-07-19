@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export interface Product {
   id: number;
   nombre: string;
@@ -64,3 +66,13 @@ export interface VentaConDetalles extends Venta {
     cajero_nombre: string;
     detalles: DetalleVentaConNombre[];
 }
+
+// --- Product Management Types ---
+export const productSchema = z.object({
+  nombre: z.string().min(3, { message: "El nombre debe tener al menos 3 caracteres." }),
+  precio: z.coerce.number().positive({ message: "El precio debe ser un número positivo." }),
+  imagen_url: z.string().url({ message: "Por favor ingrese una URL de imagen válida." }).or(z.literal('')),
+  activo: z.boolean(),
+});
+
+export type ProductFormData = z.infer<typeof productSchema>;
