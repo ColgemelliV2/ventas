@@ -4,24 +4,23 @@ import { supabase } from '@/lib/supabase';
 import type { SaleData } from '@/types';
 
 export async function login(credentials: { username: string; password?: string }) {
-  // IMPORTANT: This is a simplified login for demonstration purposes.
-  // The password check has been temporarily removed to fix a login issue.
-  // In a real application, you should use Supabase Auth or a secure password hashing and comparison mechanism.
   const { data: user, error } = await supabase
     .from('cajeros')
     .select('*')
     .eq('username', credentials.username)
     .single();
 
-  if (error) {
+  if (error || !user) {
     console.error('Supabase login error:', error);
-    return { success: false, error: 'El usuario no existe o hay un problema de conexión.' };
+    return { success: false, error: 'Usuario o contraseña incorrectos.' };
   }
 
-  if (!user) {
-    return { success: false, error: 'El usuario no existe o hay un problema de conexión.' };
+  // NOTE: This is a plain text password check. 
+  // For a real production app, you should use a secure hashing library like bcrypt to compare hashes.
+  if (user.password_hash !== credentials.password) {
+    return { success: false, error: 'Usuario o contraseña incorrectos.' };
   }
-  
+
   if (!user.activo) {
     return { success: false, error: 'La cuenta del cajero está inactiva.' };
   }
