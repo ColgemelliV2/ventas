@@ -34,12 +34,15 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
   };
 
   const handleCashChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value.replace(/\./g, '');
-    if (!isNaN(Number(rawValue))) {
-        const formattedValue = new Intl.NumberFormat('es-CO').format(Number(rawValue));
-        setCashReceived(formattedValue);
-    } else {
+    const rawValue = e.target.value.replace(/[^0-9]/g, ''); // Allow only numbers
+    if (rawValue === '') {
         setCashReceived('');
+        return;
+    }
+    const numericValue = Number(rawValue);
+    if (!isNaN(numericValue)) {
+        const formattedValue = new Intl.NumberFormat('es-CO').format(numericValue);
+        setCashReceived(formattedValue);
     }
   };
 
@@ -72,18 +75,15 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
   }, [cashReceived, subtotal]);
 
   const canFinalize = useMemo(() => {
-    if (cartItems.length === 0 || isSubmitting) {
-      return false;
-    }
-    const cash = parseFormattedNumber(cashReceived);
-    // Allow finalizing if cash input is empty, or if it's a valid number >= subtotal
-    return cashReceived === '' || (!isNaN(cash) && cash >= subtotal);
-  }, [cashReceived, subtotal, cartItems, isSubmitting]);
+    // The only conditions to finalize are having items in the cart and not currently submitting.
+    return cartItems.length > 0 && !isSubmitting;
+  }, [cartItems, isSubmitting]);
 
   const handleFinalize = () => {
     if(canFinalize) {
       const cash = parseFormattedNumber(cashReceived);
-      const cashToRecord = !isNaN(cash) ? cash : subtotal;
+      // If cash is not a valid number or is less than subtotal, assume exact payment
+      const cashToRecord = !isNaN(cash) && cash >= subtotal ? cash : subtotal;
       onRecordSale(cashToRecord).then(() => {
         setCashReceived('');
       });
@@ -152,6 +152,7 @@ export default function Cart({ cartItems, setCart, onRecordSale, isSubmitting }:
             <Input
               id="cash-received"
               type="text"
+              inputMode="numeric"
               placeholder="0"
               className="w-32 text-right font-mono"
               value={cashReceived}
