@@ -1,6 +1,6 @@
 'use server';
 
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import type { Product, SaleData, DashboardData, ProductSale, VentaConDetalles, DetalleVentaConNombre } from '@/types';
 
 export async function login(credentials: { username: string; password?: string }) {
@@ -213,7 +213,11 @@ export async function getAllSales(): Promise<{data: VentaConDetalles[] | null, e
 
 // --- Product Management Actions ---
 export async function createProduct(productData: Omit<Product, 'id' | 'created_at'>) {
-    const { data, error } = await supabase
+    if (!supabaseAdmin) {
+        return { success: false, error: "El cliente de administrador de Supabase no está inicializado. Revisa la SUPABASE_SERVICE_KEY." };
+    }
+    
+    const { data, error } = await supabaseAdmin
         .from('productos')
         .insert([productData])
         .select();
@@ -227,7 +231,11 @@ export async function createProduct(productData: Omit<Product, 'id' | 'created_a
 }
 
 export async function updateProduct(productId: number, productData: Partial<Omit<Product, 'id' | 'created_at'>>) {
-    const { data, error } = await supabase
+    if (!supabaseAdmin) {
+        return { success: false, error: "El cliente de administrador de Supabase no está inicializado. Revisa la SUPABASE_SERVICE_KEY." };
+    }
+
+    const { data, error } = await supabaseAdmin
         .from('productos')
         .update(productData)
         .eq('id', productId)
